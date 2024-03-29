@@ -18,6 +18,9 @@
 				"streetsidesoftware.code-spell-checker"
 			]
 		}
+	},
+	"features": {
+		"ghcr.io/devcontainers-contrib/features/gh-cli:1": {}
 	}
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
