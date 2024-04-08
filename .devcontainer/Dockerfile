@@ -4,6 +4,9 @@ FROM --platform=linux/amd64 ubuntu:20.04
 # FROM --platform=linux/arm64 ${base_img} 
 
 ARG DEBIAN_FRONTEND=noninteractive
+ENV HOME /root
+
+SHELL ["/bin/bash", "-c"]
 
 # ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 
@@ -15,18 +18,18 @@ ARG DEBIAN_FRONTEND=noninteractive
 #     fi \
 #     && rm -f /tmp/reinstall-cmake.sh
 
-# Optional args
-ARG cuda=0
-#ARG uid=1001
-#ARG gid=1000
-ARG ostype=Linux
-# ARG pyro_git_url=https://github.com/pyro-ppl/pyro.git
+# # Optional args
+# ARG cuda=0
+# #ARG uid=1001
+# #ARG gid=1000
+# ARG ostype=Linux
+# # ARG pyro_git_url=https://github.com/pyro-ppl/pyro.git
 
-# # Configurable settings
-#ENV USER_NAME pyromancer
-ENV CONDA_DIR /opt/conda
-ENV WORK_DIR /home/${USER_NAME}/workspace
-ENV PATH ${CONDA_DIR}/bin:${PATH}
+# # # Configurable settings
+# #ENV USER_NAME pyromancer
+# ENV CONDA_DIR /opt/conda
+# ENV WORK_DIR /home/${USER_NAME}/workspace
+# ENV PATH ${CONDA_DIR}/bin:${PATH}
 
 # Install linux utils
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -39,6 +42,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
          iputils-ping \
          ca-certificates && \
     rm -rf /var/lib/apt/lists/*
+
+RUN cd ${HOME} && \
+    wget --no-check-certificate --quiet \
+        https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.tar.gz && \
+        tar xzf ./boost_1_82_0.tar.gz && \
+        cd ./boost_1_82_0 && \
+        ./bootstrap.sh && \
+        ./b2 install && \
+        cd .. && \
+        rm -rf ./boost_1_82_0
 
 # # Change to default user
 # RUN bash -c 'if [ ${ostype} == Linux ]; then groupadd -r --gid ${gid} ${USER_NAME}; fi && \
@@ -86,9 +99,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 
 # # https://mjtdev.medium.com/how-to-conda-miniconda-anaconda-in-docker-in-2022-5579cafc44fd
-RUN mkdir -p /opt/conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh && bash /opt/conda/miniconda.sh -b -u -p /opt/miniconda
-RUN rm -rf /opt/conda/miniconda.sh
+# RUN mkdir -p /opt/conda
+# RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh && bash /opt/conda/miniconda.sh -b -u -p /opt/miniconda
+# RUN rm -rf /opt/conda/miniconda.sh
 
 # Run the software in conda base environment 
 # CMD ["/opt/miniconda/bin/conda", "run", "--no-capture-output", "-n", "base", "python" "app.py"]
@@ -109,7 +122,7 @@ RUN rm -rf /opt/conda/miniconda.sh
 # SHELL ["/opt/miniconda/bin/conda", "run", "--no-capture-output", "-n", "base", "/bin/bash", "-c"]
 # SHELL ["/bin/bash","-l", "-c"]
 
-ENV PATH /opt/miniconda/bin:$PATH 
+# ENV PATH /opt/miniconda/bin:$PATH 
 
 # RUN conda init bash && \
 #     conda config --add channels jolespin && \
@@ -123,14 +136,14 @@ ENV PATH /opt/miniconda/bin:$PATH
 
 
 # And uncomment the following:
-COPY .devcontainer/environment.yml /tmp 
+# COPY .devcontainer/environment.yml /tmp 
 #RUN conda create --name test-env
-RUN . /opt/miniconda/bin/activate && conda env update --name base --file /tmp/environment.yml
+# RUN . /opt/miniconda/bin/activate && conda env update --name base --file /tmp/environment.yml
 #RUN . /opt/miniconda/bin/activate && conda env update --name test-env --file /tmp/environment.yml
 # RUN conda env create -f /tmp/environment.yml
 # RUN . /opt/miniconda/bin/activate && conda env create -f /tmp/environment.yml
 
-RUN echo "source activate" > ~/.bashrc
+# RUN echo "source activate" > ~/.bashrc
 # RUN echo "conda init && conda activate test-env" >> ~/.bashrc
 # ENTRYPOINT ["bash", "-l", "-c"]
 
